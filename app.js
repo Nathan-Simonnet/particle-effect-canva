@@ -1,282 +1,113 @@
+const canvas = document.querySelector("canvas");
+const ctx = canvas.getContext("2d");
 
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-const canvas = document.getElementById('myCanvas');
-const ctx = canvas.getContext('2d');
-
-const myBlocksArray = {};
-
-class CircleLineCircleBlock {
-    constructor(arcX, arcY, speedX, speedY) {
-        this.arcX = arcX;
-        this.arcY = arcY;
-        this.speedX = speedX;
-        this.speedY = speedY;
-        this.drawDisplayer();
-    };
-    drawDisplayer() {
-        ctx.beginPath();
-        ctx.arc(this.arcX, this.arcY, 3, 0, 6);
-        ctx.fillStyle = 'white';
+class Particle {
+    constructor(x, y, directionX, directionY, size, color) {
+        this.x = x;
+        this.y = y;
+        this.directionY = directionY;
+        this.directionX = directionX;
+        this.size = size;
+        this.color = color;
+    }
+    draw() {
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
         ctx.fill();
-        ctx.closePath();
-    };
-    updatePosition() {
-        this.arcX += this.speedX;
-        this.arcY += this.speedY;
-
-        if(this.arcX > canvas.width || this.arcX < 0){
-            this.speedX = -this.speedX
-        } else if(this.arcY > canvas.height || this.arcY < 0){
-            this.speedY = -this.speedY;
+    }
+    update() {
+        if (this.x > canvas.width || this.x < 0) {
+            this.directionX = -this.directionX;
         }
-    };
+        else if (this.y > canvas.height || this.y < 0) {
+            this.directionY = -this.directionY;
+        }
+        this.x += this.directionX;
+        this.y += this.directionY;
+        this.draw()
+    }
+}
+const particle1 = new Particle(10, 10, 50, 55, 2, "#f1f1f1")
+console.log(particle1);
+
+
+let particlesArray;
+
+function init() {
+
+    particlesArray = [];
+
+    const numberOfParticles = (canvas.height * canvas.width) / 16000;
+
+    for (let i = 0; i < numberOfParticles; i++) {
+        // [1,3[
+        const size = (Math.random() * 2) + 1
+        // return Math.random() * (max - min + 1) + min;
+        const x = Math.random() * ((innerWidth - 10) - 10 + 1) + 10;
+        const y = Math.random() * ((innerHeight - 10) - 10 + 1) + 10;
+
+        const directionX = cleanDirection();
+        const directionY = cleanDirection();
+        particlesArray.push(new Particle(x, y, directionX, directionY, size, "#f1f1f1"))
+    }
 }
 
-for (let i = 0; i < 8; i++) {
-    const initialPositionX = Math.floor(Math.random() * 1200);
-    const initialPositionY = Math.floor(Math.random() * 800);
+init()
 
-    const speedX = Math.random() * 6 
-    const speedY = Math.random() * 6 
-
-    // const newBlock = new CircleLineCircleBlock(initialPositionXOne, initialPositionYOne, initialPositionXTwo,initialPositionYTwo,speedX,speedY)
-   myBlocksArray[`newBlock${i}`] = new CircleLineCircleBlock(initialPositionX, initialPositionY, speedX, speedY)
+function cleanDirection() {
+    // 0 ou 1
+    const random = Math.trunc(Math.random() * 2)
+    if (random) {
+        // de 0.5 à 1.5 non inclu, non trunc [0.5,1.5[
+        return (Math.random() * 1) + 0.5;
+    }
+    else {
+        // de -0.5 à -1.5 non inclu, non trunc ]-1.5,-0.5]
+        return (Math.random() * -1) - 0.5;
+    }
 }
 
 function animate() {
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, innerWidth, innerHeight)
 
-    Object.values(myBlocksArray).forEach(block => {
-        block.updatePosition();
-        block.drawDisplayer();
-    });
+    for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+    };
+      connectCicrles();  
 
-    // Request the next frame to keep the animation going
-    requestAnimationFrame(() => animate());
-};
-
+    requestAnimationFrame(animate);
+}
 animate()
 
-// const blockOne = new CircleLineCircleBlock(250, 90, 50,300,4,2);
-// blockOne.drawDisplayer()
 
-// ctx.beginPath();
-// ctx.arc(250, 65, 3, 0, 6); // (x, y, radius, startAngle, endAngle)
-// ctx.fillStyle = 'white'; // Color of the circle
-// ctx.fill();
-// ctx.closePath();
+function connectCicrles() {
 
-// // Draw the line
-// ctx.beginPath();      // Start a new path
-// ctx.strokeStyle = 'white';
-// ctx.lineWidth = 1;
-// ctx.moveTo(250, 65);   // Starting point (x, y)
-// ctx.lineTo(50, 100); // Ending point (x, y)
-// ctx.stroke();         // Render the line
-// ctx.closePath();
+    for (let i = 0; i < particlesArray.length; i++) {
+        for (let j = i + 1; j < particlesArray.length; j++) {
+            const squarreDistanceX = (particlesArray[i].x - particlesArray[j].x) * (particlesArray[i].x - particlesArray[j].x)
+            const squarreDistanceY = (particlesArray[i].y - particlesArray[j].y) * (particlesArray[i].y - particlesArray[j].y)
 
-// ctx.beginPath(); // Start a new path
-// ctx.arc(50, 100, 3, 0, 6); // (x, y, radius, startAngle, endAngle)
-// ctx.fillStyle = 'white'; // Color of the circle
-// ctx.fill();
-// ctx.closePath();
+            const hypotenuse = squarreDistanceX + squarreDistanceY
 
-// const newBlock1 = {
-//     arcOne: {
-//         arcOneX: 250,
-//         arcOneY: 250,
-//     },
-//     arcTwo: {
-//         arcTwoX: 50,
-//         arcTwoY: 100,
-//     },
-// }
+            if (hypotenuse < 135 * 135) {
+                // ${1 - hypotenuse / (135 * 135)} = opacity
+                ctx.strokeStyle = `rgba(240,240,240,${1 - hypotenuse / (135 * 135)}`;
+                ctx.lineWidth = 0.4;
+                ctx.beginPath();
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+            }
+        }
+    }
+}
 
-
-// function chimeraDisplayer(block) {
-//     ctx.beginPath();
-//     ctx.arc(block.arcOne.arcOneX, block.arcOne.arcOneY, 3, 0, 6);
-//     ctx.fillStyle = 'white';
-//     ctx.fill();
-//     ctx.closePath();
-
-//     ctx.beginPath();
-//     ctx.strokeStyle = 'white';
-//     ctx.lineWidth = 1;
-//     ctx.moveTo(block.arcOne.arcOneX, block.arcOne.arcOneY);
-//     ctx.lineTo(block.arcTwo.arcTwoX, block.arcTwo.arcTwoY);
-//     ctx.stroke();
-//     ctx.closePath();
-
-//     ctx.beginPath();
-//     ctx.arc(block.arcTwo.arcTwoX, block.arcTwo.arcTwoY, 3, 0, 6);
-//     ctx.fillStyle = 'white';
-//     ctx.fill();
-//     ctx.closePath();
-// }
-
-// chimeraDisplayer(newBlock1)
-
-
-// =======================
-
-// Back and forth
-// =================
-
-// class CircleLineCircleBlock {
-//     constructor(arcOneX, arcOneY, arcTwoX, arcTwoY, speed, direction) {
-//         this.arcOneX = arcOneX;
-//         this.arcOneY = arcOneY;
-//         this.arcTwoX = arcTwoX;
-//         this.arcTwoY = arcTwoY;
-//         this.speed = speed;
-//         this.direction = direction;
-//     };
-//     drawDisplayer() {
-//         ctx.beginPath();
-//         ctx.arc(this.arcOneX, this.arcOneY, 3, 0, 6);
-//         ctx.fillStyle = 'white';
-//         ctx.fill();
-//         ctx.closePath();
-    
-//         ctx.beginPath();
-//         ctx.strokeStyle = 'white';
-//         ctx.lineWidth = 1;
-//         ctx.moveTo(this.arcOneX, this.arcOneY);
-//         ctx.lineTo(this.arcTwoX, this.arcTwoY);
-//         ctx.stroke();
-//         ctx.closePath();
-    
-//         ctx.beginPath();
-//         ctx.arc(this.arcTwoX, this.arcTwoY, 3, 0, 6);
-//         ctx.fillStyle = 'white';
-//         ctx.fill();
-//         ctx.closePath();
-//     };
-//     updatePosition() {
-//         if(this.direction){
-//             this.arcOneX += this.speed;
-//             this.arcTwoX += this.speed;
-//         } else{
-//             this.arcOneX -= this.speed;
-//             this.arcTwoX -= this.speed;
-//         }
-
-//         // Reset position to the left when it goes off the canvas
-//         if (this.arcOneX > canvas.width || this.arcOneX < 0 || this.arcOneY > canvas.height || this.arcOneY < 0 ||this.arcTwoX > canvas.width || this.arcTwoX < 0 || this.arcTwoY > canvas.height || this.arcTwoY < 0) {
-//             this.direction = !this.direction;
-//         }
-//     };
-// }
-
-// const blockOne = new CircleLineCircleBlock(250, 90, 50,300,8, true);
-// // blockOne.drawDisplayer()
-
-// function animate() {
-//     // Clear the canvas
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-//     // Update position and redraw the block
-//     blockOne.updatePosition();
-//     blockOne.drawDisplayer();
-
-//     // Request the next frame to keep the animation going
-//     requestAnimationFrame(animate);
-// }
-
-// // Start the animation
-// animate(blockOne);
-
-// =========================
-
-// =========================
-// const myBlocksArray = {};
-
-// class CircleLineCircleBlock {
-//     constructor(arcOneX, arcOneY, arcTwoX, arcTwoY, speedOneX, speedOneY, speedTwoX, speedTwoY) {
-//         this.arcOneX = arcOneX;
-//         this.arcOneY = arcOneY;
-//         this.arcTwoX = arcTwoX;
-//         this.arcTwoY = arcTwoY;
-//         this.speedOneX = speedOneX;
-//         this.speedOneY = speedOneY;
-//         this.speedTwoX = speedTwoX;
-//         this.speedTwoY = speedTwoY;
-//         this.drawDisplayer();
-//     };
-//     drawDisplayer() {
-//         ctx.beginPath();
-//         ctx.arc(this.arcOneX, this.arcOneY, 3, 0, 6);
-//         ctx.fillStyle = 'white';
-//         ctx.fill();
-//         ctx.closePath();
-    
-//         ctx.beginPath();
-//         ctx.strokeStyle = 'white';
-//         ctx.lineWidth = 1;
-//         ctx.moveTo(this.arcOneX, this.arcOneY);
-//         ctx.lineTo(this.arcTwoX, this.arcTwoY);
-//         ctx.stroke();
-//         ctx.closePath();
-    
-//         ctx.beginPath();
-//         ctx.arc(this.arcTwoX, this.arcTwoY, 3, 0, 6);
-//         ctx.fillStyle = 'white';
-//         ctx.fill();
-//         ctx.closePath();
-//     };
-//     updatePosition() {
-//             this.arcOneX += this.speedOneX;
-//             this.arcOneY += this.speedOneY;
-
-//             this.arcTwoX += this.speedTwoX;
-//             this.arcTwoY += this.speedTwoY; 
-
-//         if (this.arcOneX > canvas.width || this.arcOneX < 0) {
-//             this.speedOneX = -this.speedOneX;
-
-//         } else if(this.arcOneY > canvas.height || this.arcOneY < 0) {
-//             this.speedOneY = -this.speedOneY;
-
-//         } else if(this.arcTwoX > canvas.width || this.arcTwoX <0) {
-//             this.speedTwoX = -this.speedTwoX;
-
-//         } else if(this.arcTwoY > canvas.height || this.arcTwoY <0) {
-//             this.speedTwoY = -this.speedTwoY;
-//         }
-//     };
-// }
-
-// for (let i = 0; i < 6; i++) {
-//     const initialPositionXOne = Math.floor(Math.random() * 1200);
-//     const initialPositionYOne = Math.floor(Math.random() * 800);
-
-//     const initialPositionXTwo = Math.floor(Math.random() * 1200);
-//     const initialPositionYTwo = Math.floor(Math.random() * 800);
-
-//     const speedXOne = Math.ceil(Math.random() * 6 ) 
-//     const speedXTwo = Math.ceil(Math.random() * 6 ) 
-//     const speedYOne = Math.ceil(Math.random() * 6 ) 
-//     const speedYTwo = Math.ceil(Math.random() * 6 ) 
-
-//     // const newBlock = new CircleLineCircleBlock(initialPositionXOne, initialPositionYOne, initialPositionXTwo,initialPositionYTwo,speedX,speedY)
-//     myBlocksArray[`newBlock${i}`] = new CircleLineCircleBlock(initialPositionXOne, initialPositionYOne, initialPositionXTwo,initialPositionYTwo,speedXOne,speedYOne,speedXTwo, speedYTwo)
-// }
-
-// console.log(myBlocksArray)
-
-// function animate() {
-//     // Clear the canvas
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-//     Object.values(myBlocksArray).forEach(block => {
-//         block.updatePosition();
-//         block.drawDisplayer();
-//     });
-
-//     // Request the next frame to keep the animation going
-//     requestAnimationFrame(() => animate());
-// };
-
-// animate()
+widow.addEventListener('resize',() => {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+    init();
+});
